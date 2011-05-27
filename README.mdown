@@ -1,5 +1,5 @@
-TwitterFetch
-============
+TwitterFetcher
+==============
 
 TwitterFetcher fetches Twitter data via the provided Twitter username, and supports the following options:
 
