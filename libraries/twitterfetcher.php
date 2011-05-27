@@ -70,7 +70,12 @@ class twitterfetcher {
 				}		
 				
 				if ($configObj['count'] == 1) {
-					return $twitterstatus[0];							
+					if (isset($twitterstatus[0])) {
+						return $twitterstatus[0];													
+					}
+					else {
+						return false;
+					}
 				}
 				else {
 					return $twitterstatus;		
@@ -94,7 +99,12 @@ class twitterfetcher {
 			}		
 			
 			if ($configObj['count'] == 1) {
-				return $twitterstatus[0];
+				if (isset($twitterstatus[0])) {
+					return $twitterstatus[0];					
+				}
+				else {
+					return false;
+				}
 			}
 			else {
 				return $twitterstatus;
