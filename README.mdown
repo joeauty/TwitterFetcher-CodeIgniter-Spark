@@ -27,7 +27,7 @@ Variables
 Usage Example
 -------------
 
-<?php
+`<?php
 $tweets = $this->twitterfetcher->getTweets(array(
 	'twitterID' => 'netmusicianorg',
 	'usecache' => false,
@@ -35,7 +35,7 @@ $tweets = $this->twitterfetcher->getTweets(array(
 	'numdays' => 30
 ));
 print_r($tweets);
-?>
+?>`
 
 *elapsedtime* String
 --------------------
