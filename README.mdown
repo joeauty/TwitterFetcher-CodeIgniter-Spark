@@ -12,6 +12,14 @@ TwitterFetcher fetches Twitter data via the provided Twitter username, and suppo
 - a human friendly "created at" string that is attached to the object returned in the format of "minutes/days/hours ago", seen frequently on various sites that display recent tweets
 - set a cutoff number of days to fetch tweets for
 
+Dependencies
+------------
+
+This library depends on the following CodeIgniter Sparks:
+
+- http://getsparks.org/packages/restclient/versions/HEAD/show
+- http://getsparks.org/packages/curl/versions/HEAD/show
+
 
 Variables
 ---------
