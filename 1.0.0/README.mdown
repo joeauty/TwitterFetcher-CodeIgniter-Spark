@@ -1,0 +1,43 @@
+TwitterFetch
+============
+
+TwitterFetcher fetches Twitter data via the provided Twitter username, and supports the following options:
+
+- specify how many tweets to fetch
+- specify whether tweets should be returned as JSON or XML data
+- an optional cache file which allows local retrieval of tweets to reduce the number of outbound Twitter connections being made by your site
+- a "cacheduration" parameter which dictates how often this cache file should be regenerated
+- specify whether Twitter links embedded in tweets should be automatically formatted into clickable links
+- support for multiple Twitter feeds
+- a human friendly "created at" string that is attached to the object returned in the format of "minutes/days/hours ago", seen frequently on various sites that display recent tweets
+- set a cutoff number of days to fetch tweets for
+
+
+Variables
+---------
+
+- **twitterID** (no default, required): the twitter username/ID you wish to fetch tweets for
+- **count** (int, default = 1): number of tweets to fetch, setting this to 0 will fetch all tweets for the specified user
+- **format** (json/xml, default = json): specify the format of the data structure returned
+- **usecache** (true/false, default = true): whether or not to use a local cache file, which needs to be located at *application/cache/twitterstatus.[format]*, where "format" is either "xml" or "json", and writable by the web server. For first time use this file can be blank, it will be populated after your *cacheduration* time has elapsed
+- **cacheduration** (int, default = 5, only relevant if "usecache" is set): regenerate the local cache file if it is older than this value, in minutes
+- **createlinks** (true/false, default = true): whether or not to convert Twitter links embedded in tweets into clickable links
+- **numdays** (int, no default): only fetch tweets newer than this number of days
+
+Usage Example
+-------------
+
+<?php
+$tweets = $this->twitterfetcher->getTweets(array(
+	'twitterID' => 'netmusicianorg',
+	'usecache' => false,
+	'count' => 0,
+	'numdays' => 30
+));
+print_r($tweets);
+?>
+
+*elapsedtime* String
+--------------------
+
+In the above example, the variables "tweets" will be an array consisting of multiple tweets for when count is some value other than 1, or a single tweet object if it is set to 1. A non-standard property will be attached to the object called "elapsedtime" which is a human friendly elapsed time string in the format of "minutes/days/hours ago"

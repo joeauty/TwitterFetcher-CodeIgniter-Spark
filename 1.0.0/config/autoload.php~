@@ -1,5 +1,0 @@
-<?php
-
-$autoload['library'] = array('twitterfetcher');
-
-?>
