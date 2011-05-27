@@ -1,6 +1,16 @@
 <?php
+/**
+ * CodeIgniter TwitterFetch Class
+ *
+ * TwitterFetcher fetches Twitter data via the provided Twitter username
+ *
+ * By Joe Auty @ http://www.netmusician.org
+ * 
+ * http://getsparks.org/packages/TwitterFetcher/show
+ * 
+ */
 
-class twitterFetcher {
+class twitterfetcher {
 	
 	function __construct() {
 		$this->CI =& get_instance();
@@ -45,19 +55,19 @@ class twitterFetcher {
 
 			if (file_get_contents(APPPATH . "cache/twitterstatus." . $configObj['format'])) {
 				$twitterstatus = json_decode(file_get_contents(APPPATH . "/cache/twitterstatus." . $configObj['format']));	
-
-				if ($configObj['createlinks']) {
-					$totaltweets = count($twitterstatus);					
-					for ($x=0; $x < $totaltweets; $x++) {
-						$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
-						if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
-							unset($twitterstatus[$x]);
-							continue;
-						}				
-						$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
-						$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);					
+				
+				$totaltweets = count($twitterstatus);					
+				for ($x=0; $x < $totaltweets; $x++) {
+					$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
+					if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
+						unset($twitterstatus[$x]);
+						continue;
 					}	
-				}				
+					if ($configObj['createlinks']) {			
+						$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
+					}
+					$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);					
+				}		
 				
 				if ($configObj['count'] == 1) {
 					return $twitterstatus[0];							
@@ -70,18 +80,18 @@ class twitterFetcher {
 		else {
 			$twitterstatus = $this->downloadTwitterStatus($configObj);
 		
-			if ($configObj['createlinks']) {
-				$totaltweets = count($twitterstatus);
-				for ($x=0; $x < $totaltweets; $x++) {
-					$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
-					if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
-						unset($twitterstatus[$x]);
-						continue;
-					}				
-					$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
-					$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);									
+			$totaltweets = count($twitterstatus);
+			for ($x=0; $x < $totaltweets; $x++) {
+				$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
+				if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
+					unset($twitterstatus[$x]);
+					continue;
 				}	
-			}				
+				if ($configObj['createlinks']) {								
+					$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
+				}
+				$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);									
+			}		
 			
 			if ($configObj['count'] == 1) {
 				return $twitterstatus[0];
