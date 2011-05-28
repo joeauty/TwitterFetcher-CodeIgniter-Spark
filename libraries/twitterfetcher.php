@@ -48,26 +48,14 @@ class twitterfetcher {
 		// timestamp five minutes ago
 			$cache = mktime(date('H'), date('i') - $configObj['cacheduration'], date('s'), date('m'), date('d'), date('Y'));	
 
-			if (filemtime(APPPATH . "cache/twitterstatus." . $configObj['format']) < $cache) {
+			if (filemtime(APPPATH . "cache/twitterstatus." . $configObj['format']) < $cache || 
+				!file_get_contents(APPPATH . "cache/twitterstatus." . $configObj['format'])) {
 			// refresh cache
 				$this->downloadTwitterStatus($configObj);
 			}		
 
 			if (file_get_contents(APPPATH . "cache/twitterstatus." . $configObj['format'])) {
-				$twitterstatus = json_decode(file_get_contents(APPPATH . "/cache/twitterstatus." . $configObj['format']));	
-				
-				$totaltweets = count($twitterstatus);					
-				for ($x=0; $x < $totaltweets; $x++) {
-					$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
-					if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
-						unset($twitterstatus[$x]);
-						continue;
-					}	
-					if ($configObj['createlinks']) {			
-						$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
-					}
-					$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);					
-				}		
+				$twitterstatus = $this->formatTweets($configObj, json_decode(file_get_contents(APPPATH . "/cache/twitterstatus." . $configObj['format'])));	
 				
 				if ($configObj['count'] == 1) {
 					if (isset($twitterstatus[0])) {
@@ -83,21 +71,8 @@ class twitterfetcher {
 			}	
 		}		
 		else {
-			$twitterstatus = $this->downloadTwitterStatus($configObj);
-		
-			$totaltweets = count($twitterstatus);
-			for ($x=0; $x < $totaltweets; $x++) {
-				$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
-				if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
-					unset($twitterstatus[$x]);
-					continue;
-				}	
-				if ($configObj['createlinks']) {								
-					$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
-				}
-				$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);									
-			}		
-			
+			$twitterstatus = $this->formatTweets($configObj, $this->downloadTwitterStatus($configObj));
+						
 			if ($configObj['count'] == 1) {
 				if (isset($twitterstatus[0])) {
 					return $twitterstatus[0];					
@@ -111,6 +86,22 @@ class twitterfetcher {
 			}
 		}	
 
+	}
+	
+	function formatTweets($configObj, $twitterstatus) {
+		$totaltweets = count($twitterstatus);
+		for ($x=0; $x < $totaltweets; $x++) {
+			$thiselapsedtime = $this->elapsedTime(strtotime($twitterstatus[$x]->created_at));
+			if (isset($configObj['numdays']) && $thiselapsedtime['days'] > $configObj['numdays']) {
+				unset($twitterstatus[$x]);
+				continue;
+			}	
+			if ($configObj['createlinks']) {								
+				$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
+			}
+			$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);									
+		}
+		return $twitterstatus;
 	}
 
 	function downloadTwitterStatus($configObj) {
