@@ -113,10 +113,10 @@ class twitterfetcher {
 
 	// Pull in an array of tweets
 		if ($configObj['count']) {
-			$tweeturl = 'statuses/user_timeline/' . $configObj['twitterID'] . '.' . $configObj['format'] . '?count=' . $configObj['count'];
+			$tweeturl = 'statuses/user_timeline.' . $configObj['format'] . '?screen_name=' . $configObj['twitterID'] . '&count=' . $configObj['count'];
 		}
 		else {
-			$tweeturl = 'statuses/user_timeline/' . $configObj['twitterID'] . '.' . $configObj['format'];
+			$tweeturl = 'statuses/user_timeline.' . $configObj['format'] . '?screen_name=' . $configObj['twitterID'];
 		}
 		$tweets = $this->CI->rest->get($tweeturl);
 
