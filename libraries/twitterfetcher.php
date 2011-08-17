@@ -122,7 +122,7 @@ class twitterfetcher {
 
 		if ($configObj['usecache']) {
 			$twittercheck = json_encode($tweets);
-			if (isset($tweets[0]) && $tweets[0]->text) {
+			if (is_array($tweets) && isset($tweets[0]) && $tweets[0]->text) {
 				$fh = fopen(APPPATH . "cache/twitterstatus." . $configObj['format'], "w");
 				fwrite($fh, $twittercheck);
 				fclose($fh);
