@@ -51,8 +51,12 @@ Usage Example
 In the above example, the variables "tweets" will be an array consisting of multiple tweets for when count is some value other than 1, or a single tweet object if it is set to 1. A non-standard property will be attached to the object called "elapsedtime" which is a human friendly elapsed time string in the format of "minutes/days/hours ago"
 
 
-Change Log
+Changelog
 ----------
+
+1.0.4
+
+- fixed a bug that prevented page renders when Twitter REST request returns an empty array
 
 1.0.3
 
