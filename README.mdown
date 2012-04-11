@@ -28,6 +28,7 @@ Variables
 - **count** (int, default = 1): number of tweets to fetch, setting this to 0 will fetch all tweets for the specified user
 - **format** (json/xml, default = json): specify the format of the data structure returned
 - **usecache** (true/false, default = true): whether or not to use a local cache file, which needs to be located at *application/cache/twitterstatus.[format]*, where "format" is either "xml" or "json", and writable by the web server. For first time use this file can be blank, it will be populated after your *cacheduration* time has elapsed
+- **cachefile** (provide custom cache file name to replace the default *twitterstatus.[format]* with *[cachefile].[format]*)
 - **cacheduration** (int, default = 5, only relevant if "usecache" is set): regenerate the local cache file if it is older than this value, in minutes
 - **createlinks** (true/false, default = true): whether or not to convert Twitter links embedded in tweets into clickable links
 - **numdays** (int, no default): only fetch tweets newer than this number of days
@@ -53,6 +54,14 @@ In the above example, the variables "tweets" will be an array consisting of mult
 
 Changelog
 ----------
+
+1.1.0
+
+- don't generate an error if twitter feed does not exist
+- custom cachefile variable support
+- error check if cache file is writable, not if cache exists
+- automatically generate cache the first time if it doesn't exist
+- bump CodeIgniter compatibility to 2.1
 
 1.0.4
 

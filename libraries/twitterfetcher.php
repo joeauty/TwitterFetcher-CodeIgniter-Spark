@@ -24,6 +24,9 @@ class twitterfetcher {
 		if (!isset($configObj['usecache'])) {
 			$configObj['usecache'] = true;
 		}
+		if (!isset($configObj['cachefile'])) {
+			$configObj['cachefile'] = "";
+		}
 		if (!isset($configObj['format'])) {
 			$configObj['format'] = "json";
 		}
@@ -33,13 +36,14 @@ class twitterfetcher {
 		if (!isset($configObj['createlinks'])) {
 			$configObj['createlinks'] = true;
 		}
+		$cachefile = ($configObj['cachefile']) ? $configObj['cachefile'] . "." . $configObj['format'] : 'twitterstatus.' . $configObj['format'];
 
-	// throw up some errors
+		// throw up some errors
 		if (!$configObj['twitterID']) {
 			show_error('ERROR: a Twitter ID has not been provided');
 		}		
-		else if ($configObj['usecache'] && !file_exists(APPPATH . "cache/twitterstatus." . $configObj['format'])) {
-			show_error('ERROR: Twitter cache file cannot be found at ' . APPPATH . "cache/twitterstatus." . $configObj['format']);
+		else if ($configObj['usecache'] && !is_writable(APPPATH . "cache")) {
+			show_error('ERROR: Twitter cache file cannot be written to ' . APPPATH . "cache/" . $cachefile);
 		}
 
 		if ($configObj['usecache']) {
@@ -48,34 +52,36 @@ class twitterfetcher {
 		// timestamp five minutes ago
 			$cache = mktime(date('H'), date('i') - $configObj['cacheduration'], date('s'), date('m'), date('d'), date('Y'));	
 
-			if (filemtime(APPPATH . "cache/twitterstatus." . $configObj['format']) < $cache || 
-				!file_get_contents(APPPATH . "cache/twitterstatus." . $configObj['format'])) {
+			if (!file_exists(APPPATH . "cache/" . $cachefile) || !file_get_contents(APPPATH . "cache/" . $cachefile) || filemtime(APPPATH . "cache/" . $cachefile) < $cache) {
 			// refresh cache
 				$this->downloadTwitterStatus($configObj);
 			}		
 
-			if (file_get_contents(APPPATH . "cache/twitterstatus." . $configObj['format'])) {
-				$twitterstatus = $this->formatTweets($configObj, json_decode(file_get_contents(APPPATH . "/cache/twitterstatus." . $configObj['format'])));	
+			if (file_get_contents(APPPATH . "cache/" . $cachefile)) {
+				$twitterstatus = $this->formatTweets($configObj, json_decode(file_get_contents(APPPATH . "/cache/" . $cachefile)));	
 				
 				if ($configObj['count'] == 1) {
 					if (isset($twitterstatus[0])) {
-						return $twitterstatus[0];													
+						return $twitterstatus[0];
 					}
 					else {
 						return false;
 					}
 				}
 				else {
-					return $twitterstatus;		
+					return $twitterstatus;
 				}
 			}	
-		}		
+		}
+		else if (!$this->downloadTwitterStatus($configObj)) {
+			return false;
+		}
 		else {
 			$twitterstatus = $this->formatTweets($configObj, $this->downloadTwitterStatus($configObj));
 						
 			if ($configObj['count'] == 1) {
 				if (isset($twitterstatus[0])) {
-					return $twitterstatus[0];					
+					return $twitterstatus[0];
 				}
 				else {
 					return false;
@@ -96,10 +102,10 @@ class twitterfetcher {
 				unset($twitterstatus[$x]);
 				continue;
 			}	
-			if ($configObj['createlinks']) {								
-				$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);	
+			if ($configObj['createlinks']) {
+				$twitterstatus[$x]->text = $this->convertToLinks($twitterstatus[$x]->text);
 			}
-			$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);									
+			$twitterstatus[$x]->elapsedtime = $this->elapsedTimeString($thiselapsedtime);
 		}
 		return $twitterstatus;
 	}
@@ -120,14 +126,18 @@ class twitterfetcher {
 		}
 		$tweets = $this->CI->rest->get($tweeturl);
 
-		if ($configObj['usecache']) {
+		if ($configObj['usecache'] && !isset($tweets->error)) {
 			$twittercheck = json_encode($tweets);
+			$cachefile = ($configObj['cachefile']) ? $configObj['cachefile'] . "." . $configObj['format'] : 'twitterstatus.' . $configObj['format'];
 			if (is_array($tweets) && isset($tweets[0]) && $tweets[0]->text) {
-				$fh = fopen(APPPATH . "cache/twitterstatus." . $configObj['format'], "w");
+				$fh = fopen(APPPATH . "cache/" . $cachefile, "w");
 				fwrite($fh, $twittercheck);
 				fclose($fh);
 			}	
-		}	
+		}
+		else if (isset($tweets->error)) {
+			return false;
+		}
 		else {
 			return $tweets;
 		}
