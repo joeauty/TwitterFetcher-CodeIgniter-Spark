@@ -148,6 +148,10 @@ class twitterfetcher {
 		$string = " " . $string . " ";
 	// string contained in the middle
 		$string = trim(preg_replace('/\s(http|https)\:\/\/(.+?)\s/m', ' <a href = "$1://$2" target="_blank">$1://$2</a> ', $string));
+	// convert @mentions to links
+		$string = trim(preg_replace("/(?<=\A|[^A-Za-z0-9_])@([A-Za-z0-9_]+)(?=\Z|[^A-Za-z0-9_])/", "<a href='http://twitter.com/$1' target='_blank'>$0</a>", $string));
+	// convert #hashtags to links
+		$string = trim(preg_replace("/(?<=\A|[^A-Za-z0-9_])#([A-Za-z0-9_]+)(?=\Z|[^A-Za-z0-9_])/", "<a href='http://twitter.com/search?q=%23$1' target='_blank'>$0</a>", $string));
 		return $string;
 	}
 	
