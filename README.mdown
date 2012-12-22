@@ -55,6 +55,10 @@ In the above example, the variables "tweets" will be an array consisting of mult
 Changelog
 ----------
 
+1.2.0
+
+- added support for creating links out of mentions and hashtags - thanks [nicekiwi](https://github.com/nicekiwi) for this contribution!
+
 1.1.0
 
 - don't generate an error if twitter feed does not exist
