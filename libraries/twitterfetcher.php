@@ -1,6 +1,6 @@
 <?php
 /**
- * CodeIgniter TwitterFetch Class
+ * CodeIgniter TwitterFetcher Class
  *
  * TwitterFetcher fetches Twitter data via the provided Twitter username
  *
