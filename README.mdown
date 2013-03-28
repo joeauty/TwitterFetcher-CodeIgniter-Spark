@@ -55,6 +55,10 @@ In the above example, the variables "tweets" will be an array consisting of mult
 Changelog
 ----------
 
+1.2.1
+
+- bug fix to handle multiple error types - thanks [ramirors](https://github.com/ramirors) for this contribution!
+
 1.2.0
 
 - added support for creating links out of mentions and hashtags - thanks [nicekiwi](https://github.com/nicekiwi) for this contribution!
