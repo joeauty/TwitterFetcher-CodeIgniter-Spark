@@ -135,7 +135,7 @@ class twitterfetcher {
 				fclose($fh);
 			}	
 		}
-		else if (isset($tweets->error)) {
+		else if (isset($tweets->errors) || isset($tweets->error)) {
 			return false;
 		}
 		else {
