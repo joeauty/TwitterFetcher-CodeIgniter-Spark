@@ -2,7 +2,7 @@ name: twitterfetcher
 
 # This is the current version of this spark. All sparks should be in
 #  x.x.x format. Validation will fail otherwise.
-version: 1.2.1
+version: 1.3.0
 
 # This is the version of CodeIgniter this spark is compatible up to. It should
 #  be in x.x.x format
@@ -10,5 +10,5 @@ compatibility: 2.1.2
 
 # There are no dependencies now, but when there are, uncomment below.
 dependencies:
-   curl: 1.2.0
-   restclient: 2.0.0
+   curl: 1.2.1
+   restclient: 2.1.0
