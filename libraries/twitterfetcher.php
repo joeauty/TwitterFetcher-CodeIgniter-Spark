@@ -236,7 +236,7 @@ class twitterfetcher {
 
 	    if ( $configObj['usecache'] && file_exists($apiCacheFile) ) {
 	    	$code = json_decode( file_get_contents($apiCacheFile) );
-	    	$code = $code[$configObj['ConsumerKey']]; //Only use the token which belongs to this ConsumerKey
+	    	$code = $code->$configObj['ConsumerKey']; //Only use the token which belongs to this ConsumerKey
 	    } else {
 	        $basicToken = base64_encode( rawurlencode($configObj['ConsumerKey']) . ":" . rawurlencode($configObj['ConsumerSecret']) );
 	        
