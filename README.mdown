@@ -25,23 +25,27 @@ Variables
 ---------
 
 - **twitterID** (no default, required): the twitter username/ID you wish to fetch tweets for
+- **ConsumerKey** (hash, required): Your twitter consumer key
+- **ConsumerSecret** (hash, required): Your twitter consumer secret
 - **count** (int, default = 1): number of tweets to fetch, setting this to 0 will fetch all tweets for the specified user
 - **format** (json/xml, default = json): specify the format of the data structure returned
 - **usecache** (true/false, default = true): whether or not to use a local cache file, which needs to be located at *application/cache/twitterstatus.[format]*, where "format" is either "xml" or "json", and writable by the web server. For first time use this file can be blank, it will be populated after your *cacheduration* time has elapsed
 - **cachefile** (provide custom cache file name to replace the default *twitterstatus.[format]* with *[cachefile].[format]*)
 - **cacheduration** (int, default = 5, only relevant if "usecache" is set): regenerate the local cache file if it is older than this value, in minutes
 - **createlinks** (true/false, default = true): whether or not to convert Twitter links embedded in tweets into clickable links
-- **numdays** (int, no default): only fetch tweets newer than this number of days
+- **numdays** (int, no default): only fetch tweets newer than this number of days.
 
 Usage Example
 -------------
 
 	<?php
 	$tweets = $this->twitterfetcher->getTweets(array(
-		'twitterID' => 'netmusicianorg',
-		'usecache' => false,
-		'count' => 0,
-		'numdays' => 30
+		'twitterID' 		=> 'netmusicianorg',
+		'ConsumerKey'		=> 'xvz1evFS4wEEPTGEFPHBog',
+		'ConsumerSecret'	=> 'L8qq9PZyRg6ieKGEKhZolGC0vJWLw8iEJ88DRdyOg',
+		'usecache' 			=> true,
+		'count' 			=> 0,
+		'numdays' 			=> 30
 	));
 	print_r($tweets);
 	?>
@@ -51,9 +55,18 @@ Usage Example
 
 In the above example, the variables "tweets" will be an array consisting of multiple tweets for when count is some value other than 1, or a single tweet object if it is set to 1. A non-standard property will be attached to the object called "elapsedtime" which is a human friendly elapsed time string in the format of "minutes/days/hours ago"
 
+Getting the api keys
+--------------------
+
+This spark requires the use of twitter api keys. To get these you need to sign up on the [twitter developer site](https://dev.twitter.com). Once you have signedin you need to create an new application. Under your twitter avatar there is an dropdown.  
+Name the application after it's inteneded use, the site name for example. After filling in the required fields you need should see the applications information page. On here the two keys you need are listed *Consumer key* and *Consumer secret*.  
+For this spark you do not need to change the access level or generate access tokens.
 
 Changelog
 ----------
+
+1.3.0
+- bug fix, Twitter has disabled API version 1.0. Version 1.1 requires authentication for most requests, please see the __getting the api keys__ section for how get the required keys
 
 1.2.1
 

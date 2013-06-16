@@ -23,6 +23,8 @@ class twitterfetcher {
 		}
 		if (!isset($configObj['usecache'])) {
 			$configObj['usecache'] = true;
+		} elseif ($configObj['usecache'] === false) {
+			log_message('info', 'TwitterFetcher: Cache should always be enabled unless you know what you are doing.');
 		}
 		if (!isset($configObj['cachefile'])) {
 			$configObj['cachefile'] = "";
@@ -112,10 +114,13 @@ class twitterfetcher {
 
 	function downloadTwitterStatus($configObj) {
 	// Load the rest client spark
-		$this->CI->load->spark('restclient/2.0.0');
+		$this->CI->load->spark('restclient/2.1.0');
 
 	// Run some setup
-		$this->CI->rest->initialize(array('server' => 'http://api.twitter.com/1/'));
+	$this->CI->rest->initialize(array('server' => 'https://api.twitter.com/1.1/'));
+
+	// Add the authorize token to the request
+	$this->CI->rest->http_header('Authorization: Bearer ' . $this->getAuthCode($configObj) );
 
 	// Pull in an array of tweets
 		if ($configObj['count']) {
@@ -222,7 +227,57 @@ class twitterfetcher {
 			return $elapsedtime['days'] . " day" . (($elapsedtime['days']>1) ? "s":"") . " ago";
 		}
 	}
-	
+	function getAuthCode($configObj){
+	    if ( !isset($configObj['ConsumerKey']) || !isset($configObj['ConsumerSecret']) ){
+	    	log_message('error', 'TwitterFetcher: You need to fill in both ConsumerKey AND ConsumerSecret in the config.');
+	        return false;
+	    }
+	    $apiCacheFile = APPPATH . "cache/TwitterFetcher_api.json";
+
+	    if ( $configObj['usecache'] && file_exists($apiCacheFile) ) {
+	    	$code = json_decode( file_get_contents($apiCacheFile) );
+	    	$code = $code->$configObj['ConsumerKey']; //Only use the token which belongs to this ConsumerKey
+	    } else {
+	        $basicToken = base64_encode( rawurlencode($configObj['ConsumerKey']) . ":" . rawurlencode($configObj['ConsumerSecret']) );
+	        
+	        $ch = curl_init();
+	        
+	        //header as required by twitter
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
+            'Authorization: Basic ' . $basicToken
+            ));
+     
+            curl_setopt($ch, CURLOPT_URL, 'https://api.twitter.com/oauth2/token');
+            curl_setopt($ch, CURLOPT_USERAGENT, "TwitterFetcher-CodeIgniter-Spark");
+            curl_setopt($ch,CURLOPT_POST, 1);
+            curl_setopt($ch,CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10); //in seconds
+            $output = json_decode( curl_exec($ch) );
+            curl_close($ch);
+            
+            if ( !isset($output->errors) ){
+                $code = $output->access_token;
+            } else {
+            	log_message('error', 'TwitterFetcher: Couldn\'t fetch token: "' . $output->errors . '"');
+            	return false;
+            }
+           	if ( $configObj['usecache'] && is_writable(APPPATH . "cache") ){
+				if ( file_exists($apiCacheFile) ) {
+					$codeCache = file_get_contents($apiCacheFile);
+					$codeCache = json_decode($codeCache);
+				} else {
+					$codeCache = array();
+				}
+				$codeCache[$configObj['ConsumerKey']] = $code;
+				file_put_contents($apiCacheFile, json_encode($codeCache));
+			}
+        }
+        
+        return $code;
+	}
 
 }
 
