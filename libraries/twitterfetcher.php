@@ -1,14 +1,14 @@
 <?php
 /**
- * CodeIgniter TwitterFetcher Class
- *
- * TwitterFetcher fetches Twitter data via the provided Twitter username
- *
- * By Joe Auty @ http://www.netmusician.org
- * 
- * http://getsparks.org/packages/TwitterFetcher/show
- * 
- */
+* CodeIgniter TwitterFetcher Class
+*
+* TwitterFetcher fetches Twitter data via the provided Twitter username
+*
+* By Joe Auty @ http://www.netmusician.org
+* 
+* http://getsparks.org/packages/TwitterFetcher/show
+* 
+*/
 
 class twitterfetcher {
 	
@@ -16,21 +16,18 @@ class twitterfetcher {
 		$this->CI =& get_instance();
 	}
 	
-	function getTweets($configObj = array()) {	
-	// set some defaults
+	function getTweets($configObj = array()) {
+		// set some defaults
 		if (!isset($configObj['count'])) {
 			$configObj['count'] = 1;
 		}
 		if (!isset($configObj['usecache'])) {
 			$configObj['usecache'] = true;
 		} elseif ($configObj['usecache'] === false) {
-			log_message('info', 'TwitterFetcher: Cache should always be enabled unless you know what you are doing.');
+			log_message('info', 'TwitterFetcher: cache should always be enabled unless you know what you are doing.');
 		}
 		if (!isset($configObj['cachefile'])) {
 			$configObj['cachefile'] = "";
-		}
-		if (!isset($configObj['format'])) {
-			$configObj['format'] = "json";
 		}
 		if (!isset($configObj['cacheduration'])) {
 			$configObj['cacheduration'] = 5;
@@ -38,29 +35,39 @@ class twitterfetcher {
 		if (!isset($configObj['createlinks'])) {
 			$configObj['createlinks'] = true;
 		}
-		$cachefile = ($configObj['cachefile']) ? $configObj['cachefile'] . "." . $configObj['format'] : 'twitterstatus.' . $configObj['format'];
+		// hardcoded cache file
+		$configObj['cachefile'] = ($configObj['cachefile']) ? $configObj['cachefile'] . ".json" : 'twitterstatus.json';
+		
+		// debug
+		//$configObj['usecache'] = false;
 
-		// throw up some errors
-		if (!$configObj['twitterID']) {
-			show_error('ERROR: a Twitter ID has not been provided');
-		}		
-		else if ($configObj['usecache'] && !is_writable(APPPATH . "cache")) {
-			show_error('ERROR: Twitter cache file cannot be written to ' . APPPATH . "cache/" . $cachefile);
+		// throw up some errors	
+		if ($configObj['usecache'] && !is_writable(APPPATH . "cache")) {
+			show_error('ERROR: Twitter cache file cannot be written to ' . APPPATH . "cache/" . $configObj['cachefile']);
 		}
+		if (!isset($configObj['consumerKey']) || !isset($configObj['consumerSecret']) || !isset($configObj['accessToken']) || !isset($configObj['accessTokenSecret'])) {
+			show_error('ERROR: You need to provide the consumerKey, consumerSecret, accessToken, and accessTokenSecret configuration parameters');
+		}
+		// hard coded Twitter user_timeline URL
+		$configObj['url'] = "https://api.twitter.com/1.1/statuses/user_timeline.json";
 
 		if ($configObj['usecache']) {
-		// download new twitter status if older than five minutes
+			// download new twitter status if older than five minutes
 
-		// timestamp five minutes ago
+			// timestamp five minutes ago
 			$cache = mktime(date('H'), date('i') - $configObj['cacheduration'], date('s'), date('m'), date('d'), date('Y'));	
 
-			if (!file_exists(APPPATH . "cache/" . $cachefile) || !file_get_contents(APPPATH . "cache/" . $cachefile) || filemtime(APPPATH . "cache/" . $cachefile) < $cache) {
-			// refresh cache
+			if (!file_exists(APPPATH . "cache/" . $configObj['cachefile']) || !file_get_contents(APPPATH . "cache/" . $configObj['cachefile']) || filemtime(APPPATH . "cache/" . $configObj['cachefile']) < $cache) {
+				// refresh cache
 				$this->downloadTwitterStatus($configObj);
-			}		
+			}	
+			
+			if (!file_exists(APPPATH . "cache/" . $configObj['cachefile'])) {
+				show_error('ERROR: There was a problem accessing or refreshing your TwitterFetcher cache file');
+			}	
 
-			if (file_get_contents(APPPATH . "cache/" . $cachefile)) {
-				$twitterstatus = $this->formatTweets($configObj, json_decode(file_get_contents(APPPATH . "/cache/" . $cachefile)));	
+			if (file_get_contents(APPPATH . "cache/" . $configObj['cachefile'])) {
+				$twitterstatus = $this->formatTweets($configObj, json_decode(file_get_contents(APPPATH . "/cache/" . $configObj['cachefile'])));	
 				
 				if ($configObj['count'] == 1) {
 					if (isset($twitterstatus[0])) {
@@ -76,7 +83,7 @@ class twitterfetcher {
 			}	
 		}
 		else if (!$this->downloadTwitterStatus($configObj)) {
-			return false;
+			show_error('ERROR: There was a problem accessing your tweets');
 		}
 		else {
 			$twitterstatus = $this->formatTweets($configObj, $this->downloadTwitterStatus($configObj));
@@ -113,29 +120,27 @@ class twitterfetcher {
 	}
 
 	function downloadTwitterStatus($configObj) {
-	// Load the rest client spark
-		$this->CI->load->spark('restclient/2.1.0');
+		// Add the authorize token to the request
+		$oauth = $this->initOAuth($configObj);
+		
+		$header = array($this->buildAuthorizationHeader($oauth), 'Expect:');
+		$options = array( CURLOPT_HTTPHEADER => $header,
+		                  //CURLOPT_POSTFIELDS => $postfields,
+		                  CURLOPT_HEADER => false,
+		                  CURLOPT_URL => $configObj['url'],
+		                  CURLOPT_RETURNTRANSFER => true,
+		                  CURLOPT_SSL_VERIFYPEER => false);
 
-	// Run some setup
-	$this->CI->rest->initialize(array('server' => 'https://api.twitter.com/1.1/'));
-
-	// Add the authorize token to the request
-	$this->CI->rest->http_header('Authorization: Bearer ' . $this->getAuthCode($configObj) );
-
-	// Pull in an array of tweets
-		if ($configObj['count']) {
-			$tweeturl = 'statuses/user_timeline.' . $configObj['format'] . '?screen_name=' . $configObj['twitterID'] . '&count=' . $configObj['count'];
-		}
-		else {
-			$tweeturl = 'statuses/user_timeline.' . $configObj['format'] . '?screen_name=' . $configObj['twitterID'];
-		}
-		$tweets = $this->CI->rest->get($tweeturl);
+		$feed = curl_init();
+		curl_setopt_array($feed, $options);
+		$json = curl_exec($feed);
+		$tweets = json_decode($json);
+		curl_close($feed);
 
 		if ($configObj['usecache'] && !isset($tweets->error)) {
 			$twittercheck = json_encode($tweets);
-			$cachefile = ($configObj['cachefile']) ? $configObj['cachefile'] . "." . $configObj['format'] : 'twitterstatus.' . $configObj['format'];
 			if (is_array($tweets) && isset($tweets[0]) && $tweets[0]->text) {
-				$fh = fopen(APPPATH . "cache/" . $cachefile, "w");
+				$fh = fopen(APPPATH . "cache/" . $configObj['cachefile'], "w");
 				fwrite($fh, $twittercheck);
 				fclose($fh);
 			}	
@@ -149,13 +154,13 @@ class twitterfetcher {
 	}
 	
 	function convertToLinks($string) {
-	// added space to beginning and end of string to capture links anchored to either end
+		// added space to beginning and end of string to capture links anchored to either end
 		$string = " " . $string . " ";
-	// string contained in the middle
+		// string contained in the middle
 		$string = trim(preg_replace('/\s(http|https)\:\/\/(.+?)\s/m', ' <a href = "$1://$2" target="_blank">$1://$2</a> ', $string));
-	// convert @mentions to links
+		// convert @mentions to links
 		$string = trim(preg_replace("/(?<=\A|[^A-Za-z0-9_])@([A-Za-z0-9_]+)(?=\Z|[^A-Za-z0-9_])/", "<a href='http://twitter.com/$1' target='_blank'>$0</a>", $string));
-	// convert #hashtags to links
+		// convert #hashtags to links
 		$string = trim(preg_replace("/(?<=\A|[^A-Za-z0-9_])#([A-Za-z0-9_]+)(?=\Z|[^A-Za-z0-9_])/", "<a href='http://twitter.com/search?q=%23$1' target='_blank'>$0</a>", $string));
 		return $string;
 	}
@@ -214,69 +219,63 @@ class twitterfetcher {
 	function elapsedTimeString($elapsedtime) {
 		if ($elapsedtime['days'] == 0) {
 			if ($elapsedtime['hours'] == 0) {
-					// show minutes
+				// show minutes
 				return $elapsedtime['mins'] . " minute" . (($elapsedtime['mins']>1) ? "s":"") . " ago";
 			}
 			else {
-					// show hours
+				// show hours
 				return $elapsedtime['hours'] . " hour" . (($elapsedtime['hours']>1) ? "s":"") . " ago";
 			}
 		}
 		else {
-				// show days
+			// show days
 			return $elapsedtime['days'] . " day" . (($elapsedtime['days']>1) ? "s":"") . " ago";
 		}
 	}
-	function getAuthCode($configObj){
-	    if ( !isset($configObj['ConsumerKey']) || !isset($configObj['ConsumerSecret']) ){
-	    	log_message('error', 'TwitterFetcher: You need to fill in both ConsumerKey AND ConsumerSecret in the config.');
-	        return false;
-	    }
-	    $apiCacheFile = APPPATH . "cache/TwitterFetcher_api.json";
+	
+	function buildBaseString($baseURI, $method, $params) {
+		$r = array();
+		ksort($params);
+		foreach($params as $key=>$value){
+			$r[] = "$key=" . rawurlencode($value);
+		}
+		return $method."&" . rawurlencode($baseURI) . '&' . rawurlencode(implode('&', $r));
+	}
+	
+	function buildAuthorizationHeader($oauth) {
+		$r = 'Authorization: OAuth ';
+		$values = array();
+		foreach($oauth as $key=>$value)
+			$values[] = "$key=\"" . rawurlencode($value) . "\"";
+		$r .= implode(', ', $values);
+		return $r;
+	}
+	
+	function initOAuth($configObj) {
+		if ($configObj['usecache'] && file_exists($configObj['cachefile'])) {
+			$jsonobj = json_decode(file_get_contents($configObj['cachefile']));
+			//$jsonobj = $jsonobj->$configObj['consumerKey']; // only use the token which belongs to this consumerKey
+		} 
+		else {
+			$basicToken = base64_encode(rawurlencode($configObj['consumerKey']) . ":" . rawurlencode($configObj['consumerSecret']));
+	        
+			$ch = curl_init();
+			
+			$oauth = array( 'oauth_consumer_key' => $configObj['consumerKey'],
+			                'oauth_nonce' => time(),
+			                'oauth_signature_method' => 'HMAC-SHA1',
+			                'oauth_token' => $configObj['accessToken'],
+			                'oauth_timestamp' => time(),
+			                'oauth_version' => '1.0');
+							
+			$base_info = $this->buildBaseString($configObj['url'], 'GET', $oauth);
+			$composite_key = rawurlencode($configObj['consumerSecret']) . '&' . rawurlencode($configObj['accessTokenSecret']);
+			$oauth_signature = base64_encode(hash_hmac('sha1', $base_info, $composite_key, true));
+			$oauth['oauth_signature'] = $oauth_signature;
+			return $oauth;
+		}
 
-	    if ( $configObj['usecache'] && file_exists($apiCacheFile) ) {
-	    	$code = json_decode( file_get_contents($apiCacheFile) );
-	    	$code = $code->$configObj['ConsumerKey']; //Only use the token which belongs to this ConsumerKey
-	    } else {
-	        $basicToken = base64_encode( rawurlencode($configObj['ConsumerKey']) . ":" . rawurlencode($configObj['ConsumerSecret']) );
-	        
-	        $ch = curl_init();
-	        
-	        //header as required by twitter
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
-            'Authorization: Basic ' . $basicToken
-            ));
-     
-            curl_setopt($ch, CURLOPT_URL, 'https://api.twitter.com/oauth2/token');
-            curl_setopt($ch, CURLOPT_USERAGENT, "TwitterFetcher-CodeIgniter-Spark");
-            curl_setopt($ch,CURLOPT_POST, 1);
-            curl_setopt($ch,CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 10); //in seconds
-            $output = json_decode( curl_exec($ch) );
-            curl_close($ch);
-            
-            if ( !isset($output->errors) ){
-                $code = $output->access_token;
-            } else {
-            	log_message('error', 'TwitterFetcher: Couldn\'t fetch token: "' . $output->errors . '"');
-            	return false;
-            }
-           	if ( $configObj['usecache'] && is_writable(APPPATH . "cache") ){
-				if ( file_exists($apiCacheFile) ) {
-					$codeCache = file_get_contents($apiCacheFile);
-					$codeCache = json_decode($codeCache);
-				} else {
-					$codeCache = array();
-				}
-				$codeCache[$configObj['ConsumerKey']] = $code;
-				file_put_contents($apiCacheFile, json_encode($codeCache));
-			}
-        }
-        
-        return $code;
+		return $jsonobj;
 	}
 
 }

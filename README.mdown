@@ -12,23 +12,14 @@ TwitterFetcher fetches Twitter data via the provided Twitter username, and suppo
 - a human friendly "created at" string that is attached to the object returned in the format of "minutes/days/hours ago", seen frequently on various sites that display recent tweets
 - set a cutoff number of days to fetch tweets for
 
-Dependencies
-------------
-
-This library depends on the following CodeIgniter Sparks:
-
-- http://getsparks.org/packages/restclient/versions/HEAD/show
-- http://getsparks.org/packages/curl/versions/HEAD/show
-
-
 Variables
 ---------
 
-- **twitterID** (no default, required): the twitter username/ID you wish to fetch tweets for
-- **ConsumerKey** (hash, required): Your twitter consumer key
-- **ConsumerSecret** (hash, required): Your twitter consumer secret
+- **consumerKey** (hash, required): your Twitter consumer key
+- **consumerSecret** (hash, required): your Twitter consumer secret
+- **accessKey** (hash, required): your access token for oAuth authentication
+- **accessKeySecret** (hash, required): your access token secret for oAuth authentication
 - **count** (int, default = 1): number of tweets to fetch, setting this to 0 will fetch all tweets for the specified user
-- **format** (json/xml, default = json): specify the format of the data structure returned
 - **usecache** (true/false, default = true): whether or not to use a local cache file, which needs to be located at *application/cache/twitterstatus.[format]*, where "format" is either "xml" or "json", and writable by the web server. For first time use this file can be blank, it will be populated after your *cacheduration* time has elapsed
 - **cachefile** (provide custom cache file name to replace the default *twitterstatus.[format]* with *[cachefile].[format]*)
 - **cacheduration** (int, default = 5, only relevant if "usecache" is set): regenerate the local cache file if it is older than this value, in minutes

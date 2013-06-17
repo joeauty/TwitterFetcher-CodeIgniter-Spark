@@ -9,6 +9,4 @@ version: 1.3.0
 compatibility: 2.1.2
 
 # There are no dependencies now, but when there are, uncomment below.
-dependencies:
-   curl: 1.2.1
-   restclient: 2.1.0
+#dependencies:
