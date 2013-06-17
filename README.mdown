@@ -31,9 +31,10 @@ Usage Example
 
 	<?php
 	$tweets = $this->twitterfetcher->getTweets(array(
-		'twitterID' 		=> 'netmusicianorg',
-		'ConsumerKey'		=> 'xvz1evFS4wEEPTGEFPHBog',
-		'ConsumerSecret'	=> 'L8qq9PZyRg6ieKGEKhZolGC0vJWLw8iEJ88DRdyOg',
+		'consumerKey'		=> '<your consumer key>',
+		'consumerSecret'	=> '<your consumer secret>',
+		'accessKey'			=> '<your access key>',
+		'accessKeySecret'	=> '<your access key secret>',
 		'usecache' 			=> true,
 		'count' 			=> 0,
 		'numdays' 			=> 30
@@ -49,9 +50,7 @@ In the above example, the variables "tweets" will be an array consisting of mult
 Getting the api keys
 --------------------
 
-This spark requires the use of twitter api keys. To get these you need to sign up on the [twitter developer site](https://dev.twitter.com). Once you have signedin you need to create an new application. Under your twitter avatar there is an dropdown.  
-Name the application after it's inteneded use, the site name for example. After filling in the required fields you need should see the applications information page. On here the two keys you need are listed *Consumer key* and *Consumer secret*.  
-For this spark you do not need to change the access level or generate access tokens.
+This spark requires the use of Twitter api keys for authentication using oAuth. To get these you need to create your Twitter application from the [twitter developer site](https://dev.twitter.com/apps). Once you have done so, you will need to generate an access token, and note the *consumer key*, *consumer secret*, *access token*, and *access token secret*. You will need to provide these hashes in the initilization (see "usage example", above)
 
 Changelog
 ----------
