@@ -17,8 +17,8 @@ Variables
 
 - **consumerKey** (hash, required): your Twitter consumer key
 - **consumerSecret** (hash, required): your Twitter consumer secret
-- **accessKey** (hash, required): your access token for oAuth authentication
-- **accessKeySecret** (hash, required): your access token secret for oAuth authentication
+- **accessToken** (hash, required): your access token for oAuth authentication
+- **accessTokenSecret** (hash, required): your access token secret for oAuth authentication
 - **count** (int, default = 1): number of tweets to fetch, setting this to 0 will fetch all tweets for the specified user
 - **usecache** (true/false, default = true): whether or not to use a local cache file, which needs to be located at *application/cache/twitterstatus.[format]*, where "format" is either "xml" or "json", and writable by the web server. For first time use this file can be blank, it will be populated after your *cacheduration* time has elapsed
 - **cachefile** (provide custom cache file name to replace the default *twitterstatus.[format]* with *[cachefile].[format]*)
@@ -33,8 +33,8 @@ Usage Example
 	$tweets = $this->twitterfetcher->getTweets(array(
 		'consumerKey'		=> '<your consumer key>',
 		'consumerSecret'	=> '<your consumer secret>',
-		'accessKey'			=> '<your access key>',
-		'accessKeySecret'	=> '<your access key secret>',
+		'accessToken'		=> '<your access token>',
+		'accessTokenSecret'	=> '<your access token secret>',
 		'usecache' 			=> true,
 		'count' 			=> 0,
 		'numdays' 			=> 30
@@ -50,7 +50,7 @@ In the above example, the variables "tweets" will be an array consisting of mult
 Getting the api keys
 --------------------
 
-This spark requires the use of Twitter api keys for authentication using oAuth. To get these you need to create your Twitter application from the [twitter developer site](https://dev.twitter.com/apps). Once you have done so, you will need to generate an access token, and note the *consumer key*, *consumer secret*, *access token*, and *access token secret*. You will need to provide these hashes in the initilization (see "usage example", above)
+This spark requires the use of Twitter api keys for authentication using oAuth. To get these you need to create your Twitter application from the [Twitter developer site](https://dev.twitter.com/apps). Once you have done so, you will need to generate an access token, and note the *consumer key*, *consumer secret*, *access token*, and *access token secret*. You will need to provide these hashes in the initilization (see "usage example", above)
 
 Changelog
 ----------
